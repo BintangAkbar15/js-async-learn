@@ -8,51 +8,59 @@
 </head>
 <body>
     <div class="container-fluid py-5">
-        <h3 class="text-center">VALO SKIN DATALIST</h3>
-        <div class="d-flex flex-wrap gap-2 justify-content-center align-items-center" id="content"></div>
+        <h3 class="text-center">DATALIST</h3>
+        <div class="d-flex flex-wrap gap-2 justify-content-center align-items-center" id="content">
+            <div class="card">
+                <div class="card-body"></div>
+            </div>
+        </div>
         <div class="d-flex justify-content-center gap-5 pt-4">
-            <button class="btn btn-primary">Previous</button>
-            <button class="btn btn-primary">Next</button>
+            <button id="btn-prev" class="btn btn-outline-primary">Previous</button>
+            <button id="btn-next" class="btn btn-outline-primary">Next</button>
         </div>
     </div>
     <script>
         const holder = document.getElementById('content')
+        const next = document.getElementById('btn-next')
+        const prev = document.getElementById('btn-prev')
+
+        let next_url = ''
+        let prev_url = ''
         
+        const baseUrl = "https://rickandmortyapi.com/api/character"
 
-        const BASEURL = 'https://valorant-api.com/v1/'
+        async function data(URL = baseUrl){
+            const a = await fetch(URL)
 
-        let dataset = []
-        const pagola = async (id = '') =>{
-            let resp = await fetch(BASEURL+ `weapons${id ? `/id=${id}` :  ''}`)
-
-            let data = await resp.json()
-            dataset = await data.data
-        }
-
-        async function getData(id = ''){
-            await pagola()
-            let page = 1
-            let perpage = 30
-            dataset.forEach(data => {
-                (data.skins).forEach((skin,idx) => {
-                    // console.log(idx)
-                    if(!skin.displayIcon) return
-                    holder.innerHTML +=
-                    `
-                    <div class="card" style="width: 18rem;">
-                        <img src="${skin.displayIcon}" class="card-img-top" alt="${skin.displayName}">
-                        <div class="card-body">
-                            <h5 class="card-title text-capitalize">${skin.displayName}</h5>
-                            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card’s content.</p>
-                        </div>
+            let b = await a.json()
+            // let aw = b.filter(data => (data.id) % 2 == 0)
+            next_url = await b.info.next
+            prev_url = await b.info.prev
+            holder.innerHTML = ''
+            await (b.results).forEach(data => {
+                holder.innerHTML +=
+                `
+                <div class="card" style="width: 18rem;">
+                    <img class="card-img-top" src="${data.image}" alt="Card image cap">
+                    <div class="card-body">
+                        <h5 class="card-title">${data.name}</h5>
                     </div>
-                    `
-                    
-                });
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item text-capitalize">${data.species} - ${data.status}</li>
+                        <li class="list-group-item text-capitalize">Origin : ${data.origin.name}</li>
+                    </ul>
+                </div>
+                `
             });
         }
+        data()
 
-        getData()
+        next.addEventListener('click',async ()=>{
+            await data(next_url)
+        })
+        prev.addEventListener('click',async ()=>{
+            await data(prev_url)
+        })
     </script>
 </body>
 </html>
